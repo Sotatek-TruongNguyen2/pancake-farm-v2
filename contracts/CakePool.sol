@@ -7,6 +7,7 @@ import "@openzeppelin/contracts/security/Pausable.sol";
 import "./interfaces/IMasterChefV2.sol";
 import "./interfaces/IBoostContract.sol";
 import "./interfaces/IVCake.sol";
+import "hardhat/console.sol";
 
 contract CakePool is Ownable, Pausable {
     using SafeERC20 for IERC20;
@@ -84,7 +85,7 @@ contract CakePool is Ownable, Pausable {
     event NewAdmin(address admin);
     event NewTreasury(address treasury);
     event NewOperator(address operator);
-    event NewBoostContract(address boostContract);
+    event NewBoostContract(address boostContract) ;
     event NewVCakeContract(address VCake);
     event FreeFeeUser(address indexed user, bool indexed free);
     event NewPerformanceFee(uint256 performanceFee);
@@ -302,7 +303,7 @@ contract CakePool is Ownable, Pausable {
         }
 
         // Harvest tokens from Masterchef.
-        harvest();
+        // harvest();
 
         // Handle stock funds.
         if (totalShares == 0) {
@@ -351,6 +352,8 @@ contract CakePool is Ownable, Pausable {
             currentShares = currentAmount;
         }
 
+        console.log("Current Shares: ", currentShares);
+
         // Calculate the boost weight share.
         if (user.lockEndTime > user.lockStartTime) {
             // Calculate boost share.
@@ -363,6 +366,9 @@ contract CakePool is Ownable, Pausable {
             uint256 userBoostedShare = (boostWeight * currentAmount) / PRECISION_FACTOR;
             user.userBoostedShare += userBoostedShare;
             totalBoostDebt += userBoostedShare;
+
+            console.log("Boost weight: ", boostWeight, boostShares);
+            console.log("Boost Debt: ", userBoostedShare, totalBoostDebt);
 
             // Update lock amount.
             user.lockedAmount += _amount;
@@ -378,8 +384,12 @@ contract CakePool is Ownable, Pausable {
         }
         totalShares += currentShares;
 
+        console.log("Total shares: ", totalShares);
+
         user.cakeAtLastUserAction = (user.shares * balanceOf()) / totalShares - user.userBoostedShare;
         user.lastUserActionTime = block.timestamp;
+
+        console.log("cakeAtLastUserAction: ", user.cakeAtLastUserAction);
 
         // Update user info in Boost Contract.
         updateBoostContractInfo(_user);
