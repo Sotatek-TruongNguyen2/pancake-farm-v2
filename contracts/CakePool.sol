@@ -183,6 +183,7 @@ contract CakePool is Ownable, Pausable {
             if (user.locked) {
                 // Calculate the user's current token amount and update related parameters.
                 uint256 currentAmount = (balanceOf() * (user.shares)) / totalShares - user.userBoostedShare;
+                console.log("Current token amount: ", balanceOf(), user.shares, currentAmount);
                 totalBoostDebt -= user.userBoostedShare;
                 user.userBoostedShare = 0;
                 totalShares -= user.shares;
@@ -202,6 +203,9 @@ contract CakePool is Ownable, Pausable {
                 // Recalculate the user's share.
                 uint256 pool = balanceOf();
                 uint256 currentShares;
+
+                console.log("Total shares before calc: ", currentAmount, pool, totalShares);
+
                 if (totalShares != 0) {
                     currentShares = (currentAmount * totalShares) / (pool - currentAmount);
                 } else {
@@ -209,6 +213,9 @@ contract CakePool is Ownable, Pausable {
                 }
                 user.shares = currentShares;
                 totalShares += currentShares;
+
+                console.log("User shares after: ", user.shares);
+                console.log("Total shares after: ", totalShares);
                 // After the lock duration, update related parameters.
                 if (user.lockEndTime < block.timestamp) {
                     user.locked = false;
@@ -328,6 +335,9 @@ contract CakePool is Ownable, Pausable {
         uint256 currentAmount;
         uint256 userCurrentLockedBalance;
         uint256 pool = balanceOf();
+
+        console.log("pool balance: ", pool);
+
         if (_amount > 0) {
             token.safeTransferFrom(_user, address(this), _amount);
             currentAmount = _amount;
@@ -336,6 +346,7 @@ contract CakePool is Ownable, Pausable {
         // Calculate lock funds
         if (user.shares > 0 && user.locked) {
             userCurrentLockedBalance = (pool * user.shares) / totalShares;
+            console.log("user current locked balance: ", totalShares, user.shares, userCurrentLockedBalance);
             currentAmount += userCurrentLockedBalance;
             totalShares -= user.shares;
             user.shares = 0;
@@ -359,6 +370,7 @@ contract CakePool is Ownable, Pausable {
             // Calculate boost share.
             uint256 boostWeight = ((user.lockEndTime - user.lockStartTime) * BOOST_WEIGHT) / DURATION_FACTOR;
             uint256 boostShares = (boostWeight * currentShares) / PRECISION_FACTOR;
+            console.log("Current shares before boosted:" , currentShares);
             currentShares += boostShares;
             user.shares += currentShares;
 
@@ -367,8 +379,12 @@ contract CakePool is Ownable, Pausable {
             user.userBoostedShare += userBoostedShare;
             totalBoostDebt += userBoostedShare;
 
+            console.log("===============================");
+            console.log("User shares: ", user.shares);
             console.log("Boost weight: ", boostWeight, boostShares);
+            console.log("Current amount: ", currentAmount);
             console.log("Boost Debt: ", userBoostedShare, totalBoostDebt);
+            console.log("===============================");
 
             // Update lock amount.
             user.lockedAmount += _amount;
@@ -448,6 +464,7 @@ contract CakePool is Ownable, Pausable {
         } else {
             currentShare = (sharesPercent * user.shares) / PRECISION_FACTOR_SHARE;
         }
+        
         uint256 currentAmount = (balanceOf() * currentShare) / totalShares;
         user.shares -= currentShare;
         totalShares -= currentShare;
