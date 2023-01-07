@@ -351,7 +351,7 @@ contract CakePool is Ownable, Pausable {
             totalShares -= user.shares;
             user.shares = 0;
 
-            // Update lock amount
+            // Update lock amount - Apply when we re-lock 
             if (user.lockStartTime == block.timestamp) {
                 user.lockedAmount = userCurrentLockedBalance;
                 totalLockedAmount += user.lockedAmount;
@@ -400,12 +400,8 @@ contract CakePool is Ownable, Pausable {
         }
         totalShares += currentShares;
 
-        console.log("Total shares: ", totalShares);
-
         user.cakeAtLastUserAction = (user.shares * balanceOf()) / totalShares - user.userBoostedShare;
         user.lastUserActionTime = block.timestamp;
-
-        console.log("cakeAtLastUserAction: ", user.cakeAtLastUserAction);
 
         // Update user info in Boost Contract.
         updateBoostContractInfo(_user);
@@ -450,7 +446,7 @@ contract CakePool is Ownable, Pausable {
         uint256 sharesPercent = (_shares * PRECISION_FACTOR_SHARE) / user.shares;
 
         // Harvest token from MasterchefV2.
-        harvest();
+        // harvest();
 
         // Update user share.
         updateUserShare(msg.sender);

@@ -52,12 +52,17 @@ describe("Lock", function () {
       await cakePool.connect(secUser).deposit(stakingAmount.div(2), LOCK_DURATION.mul(2));
       
       const totalBoostDebt = await cakePool.balanceOf();
-      console.log(totalBoostDebt.toString());
 
-      await time.increase(5 * 24 * 60 * 60);
+      await time.increase(14 * 24 * 60 * 60);
 
       await cake["mint(address,uint256)"](cakePool.address, ethers.utils.parseUnits("15000", 18));
       await cakePool.deposit(stakingAmount, LOCK_DURATION);
+
+      let secUserInfo = await cakePool.userInfo(secUser.address);
+      await cakePool.connect(secUser).withdraw(secUserInfo.shares.div(2))
+
+      secUserInfo = await cakePool.userInfo(secUser.address);
+      console.log("Boosted shares: ", secUserInfo.userBoostedShare.toString())
     });
   });
 });
