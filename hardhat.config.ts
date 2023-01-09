@@ -1,29 +1,29 @@
 import path from 'path';
-import { HardhatUserConfig } from 'hardhat/config'
+import { HardhatUserConfig } from 'hardhat/config';
 
-import 'dotenv/config'
-import '@tenderly/hardhat-tenderly'
-import 'solidity-coverage'
-import 'hardhat-gas-reporter'
-import 'hardhat-abi-exporter'
-import 'hardhat-deploy'
-import 'hardhat-log-remover'
-import 'hardhat-storage-layout'
-import 'hardhat-contract-sizer'
-import 'hardhat-watcher'
-import 'hardhat-docgen'
-import "hardhat-address-exporter";
+import 'dotenv/config';
+import '@tenderly/hardhat-tenderly';
+import 'solidity-coverage';
+import 'hardhat-gas-reporter';
+import 'hardhat-abi-exporter';
+import 'hardhat-deploy';
+import 'hardhat-log-remover';
+import 'hardhat-storage-layout';
+import 'hardhat-contract-sizer';
+import 'hardhat-watcher';
+import 'hardhat-docgen';
+import 'hardhat-address-exporter';
 // import "hardhat-tracer";
-import '@nomicfoundation/hardhat-chai-matchers'
-import '@nomicfoundation/hardhat-toolbox'
-import '@nomicfoundation/hardhat-network-helpers'
+import '@nomicfoundation/hardhat-chai-matchers';
+import '@nomicfoundation/hardhat-toolbox';
+import '@nomicfoundation/hardhat-network-helpers';
 import '@openzeppelin/hardhat-upgrades';
 import '@primitivefi/hardhat-dodoc';
 
-import { removeConsoleLog } from 'hardhat-preprocessor'
+import { removeConsoleLog } from 'hardhat-preprocessor';
 
-const BSC_API_KEY = process.env.BSC_API_KEY
-const DEPLOYER_PRIVATE_KEY = process.env.DEPLOYER_PRIVATE_KEY
+const EXPLORER_API_KEY = process.env.BSC_API_KEY;
+const DEPLOYER_PRIVATE_KEY = process.env.DEPLOYER_PRIVATE_KEY;
 
 const accounts = [DEPLOYER_PRIVATE_KEY as string];
 
@@ -39,8 +39,8 @@ enum CHAIN_IDS {
 
 const config: HardhatUserConfig = {
   dodoc: {
-      runOnCompile: false,
-      outputDir: "./doc"
+    runOnCompile: false,
+    outputDir: './doc',
   },
   docgen: {
     path: './documentation',
@@ -67,8 +67,8 @@ const config: HardhatUserConfig = {
           optimizer: {
             enabled: true,
             runs: 99999,
-          }
-        }
+          },
+        },
       },
       {
         version: '0.8.9',
@@ -81,13 +81,13 @@ const config: HardhatUserConfig = {
           optimizer: {
             enabled: true,
             runs: 99999,
-          }
-        }
-      }
-    ]
+          },
+        },
+      },
+    ],
   },
   etherscan: {
-    apiKey: BSC_API_KEY,
+    apiKey: EXPLORER_API_KEY,
   },
   gasReporter: {
     currency: 'USD',
@@ -111,7 +111,7 @@ const config: HardhatUserConfig = {
       saveDeployments: true,
       tags: ['test', 'local'],
       throwOnTransactionFailures: true,
-      throwOnCallFailures: true,  
+      throwOnCallFailures: true,
       // Solidity-coverage overrides gasPrice to 1 which is not compatible with EIP1559
       hardfork: process.env.CODE_COVERAGE ? 'berlin' : 'london',
       forking: {
@@ -121,9 +121,8 @@ const config: HardhatUserConfig = {
       },
       allowUnlimitedContractSize: true,
       accounts: {
-        count: 30
-      }
-      
+        count: 30,
+      },
     },
     mainnet: {
       url: `https://mainnet.infura.io/v3/${process.env.INFURA_API_KEY}`,
@@ -159,7 +158,7 @@ const config: HardhatUserConfig = {
       live: true,
       saveDeployments: true,
       tags: ['staging'],
-      gasPrice: 70 * (10 ** 9),
+      gasPrice: 70 * 10 ** 9,
     },
     kovan: {
       url: `https://kovan.infura.io/v3/${process.env.INFURA_API_KEY}`,
@@ -308,12 +307,12 @@ const config: HardhatUserConfig = {
   namedAccounts: {
     deployer: {
       default: 0,
-    }
+    },
   },
   preprocess: {
     eachLine: removeConsoleLog(
       (bre) =>
-        bre.network.name !== "hardhat" && bre.network.name !== "localhost"
+        bre.network.name !== 'hardhat' && bre.network.name !== 'localhost',
     ),
   },
   watcher: {
@@ -325,8 +324,8 @@ const config: HardhatUserConfig = {
     test: {
       tasks: ['test'],
       files: ['./test/Lender.spec.ts'],
-      verbose: true
-    }
+      verbose: true,
+    },
   },
   paths: {
     artifacts: 'artifacts',
@@ -351,7 +350,7 @@ const config: HardhatUserConfig = {
   addressExporter: {
     outDir: path.resolve('./addresses'),
     runPrettier: false,
-  }
-}
+  },
+};
 
-export default config
+export default config;

@@ -1,24 +1,49 @@
-import { HardhatRuntimeEnvironment } from 'hardhat/types'
-import { DeployFunction } from 'hardhat-deploy/types'
+import { HardhatRuntimeEnvironment } from 'hardhat/types';
+import { DeployFunction } from 'hardhat-deploy/types';
+import {
+  verifyEtherscanContract,
+  verifyEtherscanContractByName,
+} from '../helpers/etherscan-verification';
+import { setDRE } from '../helpers/misc-utils';
 
-const deployFarmBoosterProxyFactory: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
-  const { deployments, getNamedAccounts, ethers } = hre
-  const { deploy } = deployments
-  const { deployer } = await getNamedAccounts()
+const contractVerification: DeployFunction = async (
+  hre: HardhatRuntimeEnvironment,
+) => {
+  const { deployments, getNamedAccounts, ethers } = hre;
+  const { deploy } = deployments;
+  const { deployer } = await getNamedAccounts();
 
-  const FARM_BOOSTER_ADDRESS = (await deployments.get('FarmBooster')).address
-  const MASTER_CHEF_V2_ADDRESS = (await deployments.get('MasterChefV2')).address
-  const PLATFORM_TOKEN_ADDRESS = process.env.PLATFORM_TOKEN_ADDRESS
+  setDRE(hre);
 
-  await deploy('FarmBoosterProxyFactory', {
-    from: deployer,
-    args: [FARM_BOOSTER_ADDRESS, MASTER_CHEF_V2_ADDRESS, PLATFORM_TOKEN_ADDRESS],
-    log: true,
-    deterministicDeployment: false,
-  })
-}
+  const MASTER_CHEF_V2_ADDRESS = (await deployments.get('MasterChefV2'))
+    .address;
+  const CAKE_POOL_ADDRESS = (await deployments.get('CakePool')).address;
+  const FARM_BOOSTER_PROXY_ADDRESS = (await deployments.get('FarmBoosterProxy'))
+    .address;
+  const FARM_BOOSTER_PROXY_FACTORY_ADDRESS = (
+    await deployments.get('FarmBoosterProxyFactory')
+  ).address;
 
-deployFarmBoosterProxyFactory.tags = ['BOOSTER_PROXY_FACTORY']
-deployFarmBoosterProxyFactory.dependencies = ['MASTER_CHEF', 'FARM_BOOSTER']
+  const FARM_BOOSTER = (await deployments.get('FarmBooster')).address;
 
-export default deployFarmBoosterProxyFactory
+  await hre.addressExporter.save({
+    MASTER_CHEF_V2_ADDRESS,
+    CAKE_POOL_ADDRESS,
+    FARM_BOOSTER,
+    FARM_BOOSTER_PROXY_FACTORY_ADDRESS,
+    FARM_BOOSTER_PROXY_ADDRESS,
+  });
+
+  await verifyEtherscanContractByName('MasterChefV2');
+  await verifyEtherscanContractByName('CakePool');
+  await verifyEtherscanContractByName('FarmBooster');
+  await verifyEtherscanContractByName('FarmBoosterProxy');
+  await verifyEtherscanContractByName('FarmBoosterProxyFactory');
+
+  console.log('====== Finish Verification Process !!!');
+};
+
+contractVerification.tags = ['VERIFICATION'];
+contractVerification.runAtTheEnd = true;
+
+export default contractVerification;

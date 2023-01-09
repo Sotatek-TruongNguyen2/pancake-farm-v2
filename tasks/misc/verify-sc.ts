@@ -27,7 +27,7 @@ task('verify-sc', 'Inits the DRE, to have access to all the plugins')
       { address, constructorArguments = [], libraries }: VerifyParams,
       localBRE,
     ) => {
-      //   await localBRE.run('set-DRE');
+      await localBRE.run('set-DRE');
       checkVerification();
 
       const result = await verifyEtherscanContract(

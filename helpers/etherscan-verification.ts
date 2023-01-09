@@ -1,5 +1,6 @@
 import { exit } from 'process';
 import fs from 'fs';
+import path from 'path';
 import { file } from 'tmp-promise';
 import { DRE } from './misc-utils';
 
@@ -30,6 +31,19 @@ export const SUPPORTED_ETHERSCAN_NETWORKS = [
 function delay(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
+
+export const verifyEtherscanContractByName = async (name: string) => {
+  const currentNetwork = DRE.network.name;
+  const deployment = JSON.parse(
+    fs.readFileSync(
+      path.join(process.cwd(), 'deployments', currentNetwork, `${name}.json`),
+      'utf-8',
+    ),
+  );
+
+  const { address, args, libraries } = deployment;
+  await verifyEtherscanContract(address, args, JSON.stringify(libraries));
+};
 
 export const verifyEtherscanContract = async (
   address: string,
@@ -133,7 +147,7 @@ export const runTaskWithRetry = async (
 
 export const checkVerification = () => {
   const currentNetwork = DRE.network.name;
-  if (!process.env.ETHERSCAN_API_KEY) {
+  if (!process.env.ETHERSCAN_KEY) {
     console.error('Missing process.env.ETHERSCAN_KEY.');
     exit(3);
   }
