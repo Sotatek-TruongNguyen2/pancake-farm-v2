@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.9;
 
-import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
-import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import "./interfaces/IMasterChefV2.sol";
-import "./interfaces/IFarmBooster.sol";
+import '@openzeppelin/contracts/security/ReentrancyGuard.sol';
+import '@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol';
+import './interfaces/IMasterChefV2.sol';
+import './interfaces/IFarmBooster.sol';
 
 contract FarmBoosterProxy is ReentrancyGuard {
     using SafeERC20 for IERC20;
@@ -36,7 +36,7 @@ contract FarmBoosterProxy is ReentrancyGuard {
      * @notice Checks if the msg.sender is the admin address.
      */
     modifier onlyAdmin() {
-        require(msg.sender == admin, "admin: wut?");
+        require(msg.sender == admin, 'admin: wut?');
         _;
     }
 
@@ -48,14 +48,9 @@ contract FarmBoosterProxy is ReentrancyGuard {
      * @param _masterchefV2: the address of the Masterchef V2
      * @param _cakeToken: the address of the cake token
      */
-    function initialize(
-        address _admin,
-        address _farmBooster,
-        address _masterchefV2,
-        address _cakeToken
-    ) external {
-        require(!isInitialized, "Operations: Already initialized");
-        require(msg.sender == FARM_BOOSTER_PROXY_FACTORY, "Operations: Not factory");
+    function initialize(address _admin, address _farmBooster, address _masterchefV2, address _cakeToken) external {
+        require(!isInitialized, 'Operations: Already initialized');
+        require(msg.sender == FARM_BOOSTER_PROXY_FACTORY, 'Operations: Not factory');
 
         // Make this contract initialized
         isInitialized = true;
@@ -73,7 +68,7 @@ contract FarmBoosterProxy is ReentrancyGuard {
      */
     function deposit(uint256 _pid, uint256 _amount) external nonReentrant onlyAdmin {
         uint256 poolLength = masterchefV2.poolLength();
-        require(_pid < poolLength, "Pool is not exist");
+        require(_pid < poolLength, 'Pool is not exist');
         address lpAddress = masterchefV2.lpToken(_pid);
         IERC20(lpAddress).safeTransferFrom(msg.sender, address(this), _amount);
         if (!lpApproved[lpAddress]) {
@@ -94,7 +89,7 @@ contract FarmBoosterProxy is ReentrancyGuard {
      */
     function withdraw(uint256 _pid, uint256 _amount) external nonReentrant onlyAdmin {
         uint256 poolLength = masterchefV2.poolLength();
-        require(_pid < poolLength, "Pool is not exist");
+        require(_pid < poolLength, 'Pool is not exist');
         masterchefV2.withdraw(_pid, _amount);
         address lpAddress = masterchefV2.lpToken(_pid);
         IERC20(lpAddress).safeTransfer(msg.sender, _amount);
@@ -110,7 +105,7 @@ contract FarmBoosterProxy is ReentrancyGuard {
      */
     function emergencyWithdraw(uint256 _pid) external nonReentrant onlyAdmin {
         uint256 poolLength = masterchefV2.poolLength();
-        require(_pid < poolLength, "Pool is not exist");
+        require(_pid < poolLength, 'Pool is not exist');
         masterchefV2.emergencyWithdraw(_pid);
         address lpAddress = masterchefV2.lpToken(_pid);
         IERC20(lpAddress).safeTransfer(msg.sender, IERC20(lpAddress).balanceOf(address(this)));

@@ -15,7 +15,7 @@ import "./interfaces/IMasterChef.sol";
 /// The idea for this MasterChef V2 (MCV2) contract is therefore to be the owner of a dummy token
 /// that is deposited into the MasterChef V1 (MCV1) contract.
 /// The allocation point for this pool on MCV1 is the total allocation point for all pools that receive incentives.
-contract MasterChefV2 is Ownable, ReentrancyGuard {
+contract MasterChefV2 is Ownable,    ReentrancyGuard {
     using SafeMath for uint256;
     using SafeBEP20 for IBEP20;
 
@@ -101,25 +101,45 @@ contract MasterChefV2 is Ownable, ReentrancyGuard {
     uint256 public lastBurnedBlock;
 
     // event Init();
-    event AddPool(uint256 indexed pid, uint256 allocPoint, IBEP20 indexed lpToken, bool isRegular);
+    event AddPool(
+        uint256 indexed pid,
+        uint256 allocPoint,
+        IBEP20 indexed lpToken,
+        bool isRegular
+    );
     event SetPool(uint256 indexed pid, uint256 allocPoint);
-    event UpdatePool(uint256 indexed pid, uint256 lastRewardBlock, uint256 lpSupply, uint256 acctiktakPerShare);
+    event UpdatePool(
+        uint256 indexed pid,
+        uint256 lastRewardBlock,
+        uint256 lpSupply,
+        uint256 acctiktakPerShare
+    );
     event Deposit(address indexed user, uint256 indexed pid, uint256 amount);
     event Withdraw(address indexed user, uint256 indexed pid, uint256 amount);
-    event EmergencyWithdraw(address indexed user, uint256 indexed pid, uint256 amount);
+    event EmergencyWithdraw(
+        address indexed user,
+        uint256 indexed pid,
+        uint256 amount
+    );
 
-    event UpdatetiktakRate(uint256 burnRate, uint256 regularFarmRate, uint256 specialFarmRate);
+    event UpdatetiktakRate(
+        uint256 burnRate,
+        uint256 regularFarmRate,
+        uint256 specialFarmRate
+    );
     event UpdateBurnAdmin(address indexed oldAdmin, address indexed newAdmin);
     event UpdateWhiteList(address indexed user, bool isValid);
     event UpdateBoostContract(address indexed boostContract);
-    event UpdateBoostMultiplier(address indexed user, uint256 pid, uint256 oldMultiplier, uint256 newMultiplier);
+    event UpdateBoostMultiplier(
+        address indexed user,
+        uint256 pid,
+        uint256 oldMultiplier,
+        uint256 newMultiplier
+    );
 
     /// @param _TIKTAK The TIKTAK token contract address.
     /// @param _burnAdmin The address of burn admin.
-    constructor(
-        IBEP20 _TIKTAK,
-        address _burnAdmin
-    ) public {
+    constructor(IBEP20 _TIKTAK, address _burnAdmin) public {
         TIKTAK = _TIKTAK;
         burnAdmin = _burnAdmin;
     }
@@ -128,7 +148,10 @@ contract MasterChefV2 is Ownable, ReentrancyGuard {
      * @dev Throws if caller is not the boost contract.
      */
     modifier onlyBoostContract() {
-        require(boostContract == msg.sender, "Ownable: caller is not the boost contract");
+        require(
+            boostContract == msg.sender,
+            "Ownable: caller is not the boost contract"
+        );
         _;
     }
 
@@ -168,7 +191,10 @@ contract MasterChefV2 is Ownable, ReentrancyGuard {
         require(_lpToken.balanceOf(address(this)) >= 0, "None BEP20 tokens");
         // stake TIKTAK token will cause staked token and reward token mixed up,
         // may cause staked tokens withdraw as reward token,never do it.
-        require(_lpToken != TIKTAK, "TIKTAK token can't be added to farm pools");
+        require(
+            _lpToken != TIKTAK,
+            "TIKTAK token can't be added to farm pools"
+        );
 
         if (_withUpdate) {
             massUpdatePools();
@@ -183,12 +209,12 @@ contract MasterChefV2 is Ownable, ReentrancyGuard {
 
         poolInfo.push(
             PoolInfo({
-        allocPoint: _allocPoint,
-        lastRewardBlock: block.number,
-        acctiktakPerShare: 0,
-        isRegular: _isRegular,
-        totalBoostedShare: 0
-        })
+                allocPoint: _allocPoint,
+                lastRewardBlock: block.number,
+                acctiktakPerShare: 0,
+                isRegular: _isRegular,
+                totalBoostedShare: 0
+            })
         );
         emit AddPool(lpToken.length.sub(1), _allocPoint, _lpToken, _isRegular);
     }
@@ -210,9 +236,13 @@ contract MasterChefV2 is Ownable, ReentrancyGuard {
         }
 
         if (poolInfo[_pid].isRegular) {
-            totalRegularAllocPoint = totalRegularAllocPoint.sub(poolInfo[_pid].allocPoint).add(_allocPoint);
+            totalRegularAllocPoint = totalRegularAllocPoint
+                .sub(poolInfo[_pid].allocPoint)
+                .add(_allocPoint);
         } else {
-            totalSpecialAllocPoint = totalSpecialAllocPoint.sub(poolInfo[_pid].allocPoint).add(_allocPoint);
+            totalSpecialAllocPoint = totalSpecialAllocPoint
+                .sub(poolInfo[_pid].allocPoint)
+                .add(_allocPoint);
         }
         poolInfo[_pid].allocPoint = _allocPoint;
         emit SetPool(_pid, _allocPoint);
@@ -221,7 +251,10 @@ contract MasterChefV2 is Ownable, ReentrancyGuard {
     /// @notice View function for checking pending TIKTAK rewards.
     /// @param _pid The id of the pool. See `poolInfo`.
     /// @param _user Address of the user.
-    function pendingtiktak(uint256 _pid, address _user) external view returns (uint256) {
+    function pendingtiktak(
+        uint256 _pid,
+        address _user
+    ) external view returns (uint256) {
         PoolInfo memory pool = poolInfo[_pid];
         UserInfo memory user = userInfo[_pid][_user];
         uint256 acctiktakPerShare = pool.acctiktakPerShare;
@@ -230,14 +263,29 @@ contract MasterChefV2 is Ownable, ReentrancyGuard {
         if (block.number > pool.lastRewardBlock && lpSupply != 0) {
             uint256 multiplier = block.number.sub(pool.lastRewardBlock);
 
-            uint256 tiktakReward = multiplier.mul(tiktakPerBlock(pool.isRegular)).mul(pool.allocPoint).div(
-                (pool.isRegular ? totalRegularAllocPoint : totalSpecialAllocPoint)
+            uint256 tiktakReward = multiplier
+                .mul(tiktakPerBlock(pool.isRegular))
+                .mul(pool.allocPoint)
+                .div(
+                    (
+                        pool.isRegular
+                            ? totalRegularAllocPoint
+                            : totalSpecialAllocPoint
+                    )
+                );
+            acctiktakPerShare = acctiktakPerShare.add(
+                tiktakReward.mul(ACC_TIKTAK_PRECISION).div(lpSupply)
             );
-            acctiktakPerShare = acctiktakPerShare.add(tiktakReward.mul(ACC_TIKTAK_PRECISION).div(lpSupply));
         }
 
-        uint256 boostedAmount = user.amount.mul(getBoostMultiplier(_user, _pid)).div(BOOST_PRECISION);
-        return boostedAmount.mul(acctiktakPerShare).div(ACC_TIKTAK_PRECISION).sub(user.rewardDebt);
+        uint256 boostedAmount = user
+            .amount
+            .mul(getBoostMultiplier(_user, _pid))
+            .div(BOOST_PRECISION);
+        return
+            boostedAmount.mul(acctiktakPerShare).div(ACC_TIKTAK_PRECISION).sub(
+                user.rewardDebt
+            );
     }
 
     /// @notice Update tiktak reward for all the active pools. Be careful of gas spending!
@@ -253,17 +301,25 @@ contract MasterChefV2 is Ownable, ReentrancyGuard {
 
     /// @notice Calculates and returns the `amount` of TIKTAK per block.
     /// @param _isRegular If the pool belongs to regular or special.
-    function tiktakPerBlock(bool _isRegular) public view returns (uint256 amount) {
+    function tiktakPerBlock(
+        bool _isRegular
+    ) public view returns (uint256 amount) {
         if (_isRegular) {
-            amount = MASTERCHEF_TIKTAK_PER_BLOCK.mul(tiktakRateToRegularFarm).div(TIKTAK_RATE_TOTAL_PRECISION);
+            amount = MASTERCHEF_TIKTAK_PER_BLOCK
+                .mul(tiktakRateToRegularFarm)
+                .div(TIKTAK_RATE_TOTAL_PRECISION);
         } else {
-            amount = MASTERCHEF_TIKTAK_PER_BLOCK.mul(tiktakRateToSpecialFarm).div(TIKTAK_RATE_TOTAL_PRECISION);
+            amount = MASTERCHEF_TIKTAK_PER_BLOCK
+                .mul(tiktakRateToSpecialFarm)
+                .div(TIKTAK_RATE_TOTAL_PRECISION);
         }
     }
 
     /// @notice Calculates and returns the `amount` of TIKTAK per block to burn.
     function tiktakPerBlockToBurn() public view returns (uint256 amount) {
-        amount = MASTERCHEF_TIKTAK_PER_BLOCK.mul(tiktakRateToBurn).div(TIKTAK_RATE_TOTAL_PRECISION);
+        amount = MASTERCHEF_TIKTAK_PER_BLOCK.mul(tiktakRateToBurn).div(
+            TIKTAK_RATE_TOTAL_PRECISION
+        );
     }
 
     /// @notice Update reward variables for the given pool.
@@ -273,18 +329,28 @@ contract MasterChefV2 is Ownable, ReentrancyGuard {
         pool = poolInfo[_pid];
         if (block.number > pool.lastRewardBlock) {
             uint256 lpSupply = pool.totalBoostedShare;
-            uint256 totalAllocPoint = (pool.isRegular ? totalRegularAllocPoint : totalSpecialAllocPoint);
+            uint256 totalAllocPoint = (
+                pool.isRegular ? totalRegularAllocPoint : totalSpecialAllocPoint
+            );
 
             if (lpSupply > 0 && totalAllocPoint > 0) {
                 uint256 multiplier = block.number.sub(pool.lastRewardBlock);
-                uint256 tiktakReward = multiplier.mul(tiktakPerBlock(pool.isRegular)).mul(pool.allocPoint).div(
-                    totalAllocPoint
+                uint256 tiktakReward = multiplier
+                    .mul(tiktakPerBlock(pool.isRegular))
+                    .mul(pool.allocPoint)
+                    .div(totalAllocPoint);
+                pool.acctiktakPerShare = pool.acctiktakPerShare.add(
+                    (tiktakReward.mul(ACC_TIKTAK_PRECISION).div(lpSupply))
                 );
-                pool.acctiktakPerShare = pool.acctiktakPerShare.add((tiktakReward.mul(ACC_TIKTAK_PRECISION).div(lpSupply)));
             }
             pool.lastRewardBlock = block.number;
             poolInfo[_pid] = pool;
-            emit UpdatePool(_pid, pool.lastRewardBlock, lpSupply, pool.acctiktakPerShare);
+            emit UpdatePool(
+                _pid,
+                pool.lastRewardBlock,
+                lpSupply,
+                pool.acctiktakPerShare
+            );
         }
     }
 
@@ -313,12 +379,17 @@ contract MasterChefV2 is Ownable, ReentrancyGuard {
             user.amount = user.amount.add(_amount);
 
             // Update total boosted share.
-            pool.totalBoostedShare = pool.totalBoostedShare.add(_amount.mul(multiplier).div(BOOST_PRECISION));
+            pool.totalBoostedShare = pool.totalBoostedShare.add(
+                _amount.mul(multiplier).div(BOOST_PRECISION)
+            );
         }
 
-        user.rewardDebt = user.amount.mul(multiplier).div(BOOST_PRECISION).mul(pool.acctiktakPerShare).div(
-            ACC_TIKTAK_PRECISION
-        );
+        user.rewardDebt = user
+            .amount
+            .mul(multiplier)
+            .div(BOOST_PRECISION)
+            .mul(pool.acctiktakPerShare)
+            .div(ACC_TIKTAK_PRECISION);
         poolInfo[_pid] = pool;
 
         emit Deposit(msg.sender, _pid, _amount);
@@ -342,9 +413,12 @@ contract MasterChefV2 is Ownable, ReentrancyGuard {
             lpToken[_pid].safeTransfer(msg.sender, _amount);
         }
 
-        user.rewardDebt = user.amount.mul(multiplier).div(BOOST_PRECISION).mul(pool.acctiktakPerShare).div(
-            ACC_TIKTAK_PRECISION
-        );
+        user.rewardDebt = user
+            .amount
+            .mul(multiplier)
+            .div(BOOST_PRECISION)
+            .mul(pool.acctiktakPerShare)
+            .div(ACC_TIKTAK_PRECISION);
         poolInfo[_pid].totalBoostedShare = poolInfo[_pid].totalBoostedShare.sub(
             _amount.mul(multiplier).div(BOOST_PRECISION)
         );
@@ -353,8 +427,7 @@ contract MasterChefV2 is Ownable, ReentrancyGuard {
     }
 
     /// @notice Harvests TIKTAK from `MASTER_CHEF` MCV1 and pool `MASTER_PID` to MCV2.
-    function harvestRewardsFromOwner() public {
-    }
+    function harvestRewardsFromOwner() public {}
 
     /// @notice Withdraw without caring about the rewards. EMERGENCY ONLY.
     /// @param _pid The id of the pool. See `poolInfo`.
@@ -365,8 +438,12 @@ contract MasterChefV2 is Ownable, ReentrancyGuard {
         uint256 amount = user.amount;
         user.amount = 0;
         user.rewardDebt = 0;
-        uint256 boostedAmount = amount.mul(getBoostMultiplier(msg.sender, _pid)).div(BOOST_PRECISION);
-        pool.totalBoostedShare = pool.totalBoostedShare > boostedAmount ? pool.totalBoostedShare.sub(boostedAmount) : 0;
+        uint256 boostedAmount = amount
+            .mul(getBoostMultiplier(msg.sender, _pid))
+            .div(BOOST_PRECISION);
+        pool.totalBoostedShare = pool.totalBoostedShare > boostedAmount
+            ? pool.totalBoostedShare.sub(boostedAmount)
+            : 0;
 
         // Note: transfer can fail or succeed if `amount` is zero.
         lpToken[_pid].safeTransfer(msg.sender, amount);
@@ -404,7 +481,8 @@ contract MasterChefV2 is Ownable, ReentrancyGuard {
             "MasterChefV2: tiktak rate must be greater than 0"
         );
         require(
-            _burnRate.add(_regularFarmRate).add(_specialFarmRate) == TIKTAK_RATE_TOTAL_PRECISION,
+            _burnRate.add(_regularFarmRate).add(_specialFarmRate) ==
+                TIKTAK_RATE_TOTAL_PRECISION,
             "MasterChefV2: Total rate must be 1e12"
         );
         if (_withUpdate) {
@@ -423,8 +501,14 @@ contract MasterChefV2 is Ownable, ReentrancyGuard {
     /// @notice Update burn admin address.
     /// @param _newAdmin The new burn admin address.
     function updateBurnAdmin(address _newAdmin) external onlyOwner {
-        require(_newAdmin != address(0), "MasterChefV2: Burn admin address must be valid");
-        require(_newAdmin != burnAdmin, "MasterChefV2: Burn admin address is the same with current address");
+        require(
+            _newAdmin != address(0),
+            "MasterChefV2: Burn admin address must be valid"
+        );
+        require(
+            _newAdmin != burnAdmin,
+            "MasterChefV2: Burn admin address is the same with current address"
+        );
         address _oldAdmin = burnAdmin;
         burnAdmin = _newAdmin;
         emit UpdateBurnAdmin(_oldAdmin, _newAdmin);
@@ -434,7 +518,10 @@ contract MasterChefV2 is Ownable, ReentrancyGuard {
     /// @param _user The address to be updated.
     /// @param _isValid The flag for valid or invalid.
     function updateWhiteList(address _user, bool _isValid) external onlyOwner {
-        require(_user != address(0), "MasterChefV2: The white list address must be valid");
+        require(
+            _user != address(0),
+            "MasterChefV2: The white list address must be valid"
+        );
 
         whiteList[_user] = _isValid;
         emit UpdateWhiteList(_user, _isValid);
@@ -444,7 +531,8 @@ contract MasterChefV2 is Ownable, ReentrancyGuard {
     /// @param _newBoostContract The new address for handling all the share boosts.
     function updateBoostContract(address _newBoostContract) external onlyOwner {
         require(
-            _newBoostContract != address(0) && _newBoostContract != boostContract,
+            _newBoostContract != address(0) &&
+                _newBoostContract != boostContract,
             "MasterChefV2: New boost contract address must be valid"
         );
 
@@ -461,10 +549,17 @@ contract MasterChefV2 is Ownable, ReentrancyGuard {
         uint256 _pid,
         uint256 _newMultiplier
     ) external onlyBoostContract nonReentrant {
-        require(_user != address(0), "MasterChefV2: The user address must be valid");
-        require(poolInfo[_pid].isRegular, "MasterChefV2: Only regular farm could be boosted");
         require(
-            _newMultiplier >= BOOST_PRECISION && _newMultiplier <= MAX_BOOST_PRECISION,
+            _user != address(0),
+            "MasterChefV2: The user address must be valid"
+        );
+        require(
+            poolInfo[_pid].isRegular,
+            "MasterChefV2: Only regular farm could be boosted"
+        );
+        require(
+            _newMultiplier >= BOOST_PRECISION &&
+                _newMultiplier <= MAX_BOOST_PRECISION,
             "MasterChefV2: Invalid new boost multiplier"
         );
 
@@ -474,12 +569,16 @@ contract MasterChefV2 is Ownable, ReentrancyGuard {
         uint256 prevMultiplier = getBoostMultiplier(_user, _pid);
         settlePendingtiktak(_user, _pid, prevMultiplier);
 
-        user.rewardDebt = user.amount.mul(_newMultiplier).div(BOOST_PRECISION).mul(pool.acctiktakPerShare).div(
-            ACC_TIKTAK_PRECISION
-        );
-        pool.totalBoostedShare = pool.totalBoostedShare.sub(user.amount.mul(prevMultiplier).div(BOOST_PRECISION)).add(
-            user.amount.mul(_newMultiplier).div(BOOST_PRECISION)
-        );
+        user.rewardDebt = user
+            .amount
+            .mul(_newMultiplier)
+            .div(BOOST_PRECISION)
+            .mul(pool.acctiktakPerShare)
+            .div(ACC_TIKTAK_PRECISION);
+        pool.totalBoostedShare = pool
+            .totalBoostedShare
+            .sub(user.amount.mul(prevMultiplier).div(BOOST_PRECISION))
+            .add(user.amount.mul(_newMultiplier).div(BOOST_PRECISION));
         poolInfo[_pid] = pool;
         userInfo[_pid][_user].boostMultiplier = _newMultiplier;
 
@@ -489,7 +588,10 @@ contract MasterChefV2 is Ownable, ReentrancyGuard {
     /// @notice Get user boost multiplier for specific pool id.
     /// @param _user The user address.
     /// @param _pid The pool id.
-    function getBoostMultiplier(address _user, uint256 _pid) public view returns (uint256) {
+    function getBoostMultiplier(
+        address _user,
+        uint256 _pid
+    ) public view returns (uint256) {
         uint256 multiplier = userInfo[_pid][_user].boostMultiplier;
         return multiplier > BOOST_PRECISION ? multiplier : BOOST_PRECISION;
     }
@@ -505,8 +607,12 @@ contract MasterChefV2 is Ownable, ReentrancyGuard {
     ) internal {
         UserInfo memory user = userInfo[_pid][_user];
 
-        uint256 boostedAmount = user.amount.mul(_boostMultiplier).div(BOOST_PRECISION);
-        uint256 acctiktak = boostedAmount.mul(poolInfo[_pid].acctiktakPerShare).div(ACC_TIKTAK_PRECISION);
+        uint256 boostedAmount = user.amount.mul(_boostMultiplier).div(
+            BOOST_PRECISION
+        );
+        uint256 acctiktak = boostedAmount
+            .mul(poolInfo[_pid].acctiktakPerShare)
+            .div(ACC_TIKTAK_PRECISION);
         uint256 pending = acctiktak.sub(user.rewardDebt);
         // SafeTransfer TIKTAK
         _safeTransfer(_user, pending);
