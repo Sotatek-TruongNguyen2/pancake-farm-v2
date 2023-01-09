@@ -10,7 +10,8 @@
     "bignumber.js": "^9.0.2",
     "dotenv": "^16.0.1",
     "hardhat": "^2.10.1",
-    "hardhat-tracer": "^1.1.0-rc.9"
+    "hardhat-tracer": "^1.1.0-rc.9",
+    "tmp-promise": "^3.0.3"
   },
   "scripts": {
     "bsc:deploy": "hardhat deploy --network bsc --reset",
@@ -66,13 +67,13 @@
     "hardhat-storage-layout": "^0.1.6",
     "hardhat-watcher": "^2.1.1",
     "lint-staged": "^12.3.8",
-    "solidity-coverage": "^0.7.21",
-    "ts-node": ">=8.0.0",
-    "typechain": "^8.1.0",
-    "typescript": ">=4.5.0",
     "prettier": "^2.0.5",
     "prettier-plugin-solidity": "^1.0.0-alpha.59",
     "solhint": "^3.2.1",
-    "solhint-plugin-prettier": "^0.0.5"
+    "solhint-plugin-prettier": "^0.0.5",
+    "solidity-coverage": "^0.7.21",
+    "ts-node": ">=8.0.0",
+    "typechain": "^8.1.0",
+    "typescript": ">=4.5.0"
   }
 }
