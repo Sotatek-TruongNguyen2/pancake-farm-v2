@@ -7,7 +7,7 @@ import "./@openzeppelin-0.6.12/contracts/access/Ownable.sol";
 import "./@openzeppelin-0.6.12/contracts/math/SafeMath.sol";
 import "./@openzeppelin-0.6.12/contracts/utils/ReentrancyGuard.sol";
 import "./interfaces/IBEP20.sol";
-import "./SafeBEP20.sol";
+import "./libraries/SafeBEP20.sol";
 import "./interfaces/IMasterChef.sol";
 
 /// @notice The (older) MasterChef contract gives out a constant number of TIKTAK tokens per block.
