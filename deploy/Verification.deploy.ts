@@ -1,17 +1,12 @@
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { DeployFunction } from 'hardhat-deploy/types';
-import {
-  verifyEtherscanContract,
-  verifyEtherscanContractByName,
-} from '../helpers/etherscan-verification';
+import { verifyEtherscanContractByName } from '../helpers/etherscan-verification';
 import { setDRE } from '../helpers/misc-utils';
 
 const contractVerification: DeployFunction = async (
   hre: HardhatRuntimeEnvironment,
 ) => {
-  const { deployments, getNamedAccounts, ethers } = hre;
-  const { deploy } = deployments;
-  const { deployer } = await getNamedAccounts();
+  const { deployments } = hre;
 
   setDRE(hre);
 
