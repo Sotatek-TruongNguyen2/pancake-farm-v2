@@ -22,8 +22,7 @@ import '@primitivefi/hardhat-dodoc';
 
 import { removeConsoleLog } from 'hardhat-preprocessor'
 
-const ETHERSCAN_API_KEY = process.env.ETHERSCAN_API_KEY
-const INFURA_API_KEY = process.env.INFURA_API_KEY
+const BSC_API_KEY = process.env.BSC_API_KEY
 const DEPLOYER_PRIVATE_KEY = process.env.DEPLOYER_PRIVATE_KEY
 
 const accounts = [DEPLOYER_PRIVATE_KEY as string];
@@ -88,7 +87,7 @@ const config: HardhatUserConfig = {
     ]
   },
   etherscan: {
-    apiKey: ETHERSCAN_API_KEY,
+    apiKey: BSC_API_KEY,
   },
   gasReporter: {
     currency: 'USD',
@@ -111,6 +110,8 @@ const config: HardhatUserConfig = {
       live: false,
       saveDeployments: true,
       tags: ['test', 'local'],
+      throwOnTransactionFailures: true,
+      throwOnCallFailures: true,  
       // Solidity-coverage overrides gasPrice to 1 which is not compatible with EIP1559
       hardfork: process.env.CODE_COVERAGE ? 'berlin' : 'london',
       forking: {

@@ -310,7 +310,7 @@ contract CakePool is Ownable, Pausable {
         }
 
         // Harvest tokens from Masterchef.
-        // harvest();
+        harvest();
 
         // Handle stock funds.
         if (totalShares == 0) {
@@ -351,12 +351,13 @@ contract CakePool is Ownable, Pausable {
             totalShares -= user.shares;
             user.shares = 0;
 
-            // Update lock amount - Apply when we re-lock 
+            // Update lock amount
             if (user.lockStartTime == block.timestamp) {
                 user.lockedAmount = userCurrentLockedBalance;
                 totalLockedAmount += user.lockedAmount;
             }
         }
+
         if (totalShares != 0) {
             currentShares = (currentAmount * totalShares) / (pool - userCurrentLockedBalance);
         } else {
@@ -370,7 +371,6 @@ contract CakePool is Ownable, Pausable {
             // Calculate boost share.
             uint256 boostWeight = ((user.lockEndTime - user.lockStartTime) * BOOST_WEIGHT) / DURATION_FACTOR;
             uint256 boostShares = (boostWeight * currentShares) / PRECISION_FACTOR;
-            console.log("Current shares before boosted:" , currentShares);
             currentShares += boostShares;
             user.shares += currentShares;
 
@@ -378,13 +378,6 @@ contract CakePool is Ownable, Pausable {
             uint256 userBoostedShare = (boostWeight * currentAmount) / PRECISION_FACTOR;
             user.userBoostedShare += userBoostedShare;
             totalBoostDebt += userBoostedShare;
-
-            console.log("===============================");
-            console.log("User shares: ", user.shares);
-            console.log("Boost weight: ", boostWeight, boostShares);
-            console.log("Current amount: ", currentAmount);
-            console.log("Boost Debt: ", userBoostedShare, totalBoostDebt);
-            console.log("===============================");
 
             // Update lock amount.
             user.lockedAmount += _amount;
@@ -446,7 +439,7 @@ contract CakePool is Ownable, Pausable {
         uint256 sharesPercent = (_shares * PRECISION_FACTOR_SHARE) / user.shares;
 
         // Harvest token from MasterchefV2.
-        // harvest();
+        harvest();
 
         // Update user share.
         updateUserShare(msg.sender);
