@@ -26,4 +26,10 @@ interface ICakePool {
     function BOOST_WEIGHT() external view returns (uint256);
 
     function MAX_LOCK_DURATION() external view returns (uint256);
+
+    function withdrawByAmount(uint256 _amount) external;
+    
+    function withdrawAll() external;
+
+    function deposit(uint256 _amount, uint256 _lockDuration) external;
 }
